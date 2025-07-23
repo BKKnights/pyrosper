@@ -1,0 +1,41 @@
+ci:
+  autoupdate_schedule: monthly
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+    -   id: black
+  - repo: local
+    hooks:
+      - id: pytype
+        name: pytype
+        entry: pytype
+        language: python
+        types: [ python ]
+        args: [ "--config=pytype.toml" ]
+        pass_filenames: false
+        require_serial: true
+  - repo: https://github.com/NorthIsUp/pyright-pretty
+    rev: v0.1.0
+    hooks:
+      - id: pyright-pretty
+        args: [ "src" ]
+  - repo: https://github.com/timothycrosley/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        exclude: '^clients/'
+        args: [ "--profile", "black" ]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+  - repo: https://github.com/econchick/interrogate
+    rev: 1.7.0
+    hooks:
+      - id: interrogate
+        args: [--config=pyproject.toml]

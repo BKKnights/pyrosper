@@ -1,0 +1,20 @@
+[metadata]
+name = "pyrosper"
+
+[tool.interrogate]
+fail-under = 80
+verbose = 1
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.pytest.ini_options]
+addopts = "-n auto"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort"
+]
