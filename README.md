@@ -1,5 +1,6 @@
 ## `\\//,` pyrosper (pronounced "prosper")
-A continuously improving, experimentation framework. Now in python.
+A continuously improving, experimentation framework.
+Now in python, ported from the [Typescript counterpart](https://github.com/BKKnights/prosper).
 
 ### Installation
 TBD
