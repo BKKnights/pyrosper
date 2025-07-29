@@ -4,7 +4,7 @@
 
 # Space-separated list of files or directories to exclude.
 exclude = [
-    '**/test_*.py',
+    '**/*_test.py',
 ]
 
 # Space-separated list of files or directories to process.

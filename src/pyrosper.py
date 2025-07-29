@@ -1,13 +1,12 @@
-from abc import ABC, abstractmethod
-from typing import Generic, List, Optional, Set, TypeVar, Any
+from typing import Generic, List, Optional, Set, TypeVar, Any, Type
 from base_experiment import BaseExperiment
-
+from src.symbol import Symbol
 
 T = TypeVar('T')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 
 
-class Prosper(Generic[ExperimentType]):
+class Pyrosper(Generic[ExperimentType]):
     def __init__(self):
         self.experiments: List[ExperimentType] = []
         self.used_symbols: Set[object] = set()
@@ -43,7 +42,7 @@ class Prosper(Generic[ExperimentType]):
 
         return pick_symbols
 
-    def with_experiment(self, experiment: ExperimentType) -> 'Prosper':
+    def with_experiment(self, experiment: ExperimentType) -> 'Pyrosper':
         new_symbols = self.validate(experiment)
         self.experiments.append(experiment)
         self.used_symbols.update(new_symbols)
@@ -69,15 +68,28 @@ class Prosper(Generic[ExperimentType]):
             raise ValueError(f'Variant "{variant_name}" does not exist in Experiment "{experiment_name}".')
 
 
-def pick(service_identifier: object):
+# Not sure how to make this work with python directly yet
+def _pick(service_identifier: object):
     def decorator(target: Any, target_key: str):
         def getter(self):
-            prosper = getattr(self, 'prosper', None)
-            if prosper is None:
-                raise ValueError('.prosper property missing')
-            if not prosper.has_pick(service_identifier):
+            pyrosper = getattr(self, 'pyrosper', None)
+            if pyrosper is None:
+                raise ValueError('.pyrosper property missing')
+            if not pyrosper.has_pick(service_identifier):
                 raise ValueError(f'Pick {service_identifier} is not available')
-            return prosper.pick(service_identifier)
+            return pyrosper.pick(service_identifier)
 
         setattr(target, target_key, property(getter))
     return decorator
+
+
+# Not a decorator, but a function to pick a specific type
+PickType = TypeVar("PickType")
+def pick(pyrosper: 'Pyrosper', symbol: Symbol, type: Type[PickType]) -> PickType:
+    found = next((experiment for experiment in pyrosper.experiments if experiment.has_pick(symbol)), None)
+    if not found:
+        raise RuntimeError(f"`unable to find {symbol}")
+    value = found.pick(symbol)
+    if not isinstance(value, type):
+        raise TypeError(f"Expected type {type}, but got {value} for symbol {symbol}")
+    return value

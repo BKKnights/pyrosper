@@ -1,55 +1,11 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from typing import Optional, List, Self
-from base_experiment import BaseExperiment, Variant, ExperimentType
+from typing import List
+from base_experiment import Variant
+from src.mock_algorithm import MockAlgorithm
+from src.mock_experiment import MockExperiment
 from user_variant import UserVariant
 
-
-class MockAlgorithm:
-    pass
-
-class MockExperiment(BaseExperiment[MockAlgorithm, Variant]):
-    async def get_experiment(self) -> Optional[Self]:
-        return self
-
-    async def upsert_experiment(self, experiment: ExperimentType) -> Self:
-        return type(self)(
-            id=experiment.id,
-            name=experiment.name,
-            variants=experiment.variants,
-            is_enabled=experiment.is_enabled,
-            variant_index=experiment.variant_index,
-        )
-
-    async def delete_experiment(self, experiment: ExperimentType) -> None:
-        pass
-
-    async def get_user_variant(self, user_id: str, experiment_id: str) -> Optional[UserVariant]:
-        pass
-
-    async def upsert_user_variant(self, user_variant: UserVariant) -> None:
-        pass
-
-    async def delete_user_variant(self, user_variant: UserVariant) -> None:
-        pass
-
-    async def delete_user_variants(self) -> None:
-        pass
-
-    async def get_algorithm(self) -> MockAlgorithm:
-        return MockAlgorithm()
-
-    async def get_variant_index(self, algorithm: MockAlgorithm) -> int:
-        return 0
-
-    async def reward_algorithm(self, algorithm: MockAlgorithm, user_variant_index: int, score: float) -> MockAlgorithm:
-        return MockAlgorithm()
-
-    async def upsert_algorithm(self, algorithm: MockAlgorithm) -> None:
-        pass
-
-    async def delete_algorithm(self) -> None:
-        pass
 
 id: str
 name: str
