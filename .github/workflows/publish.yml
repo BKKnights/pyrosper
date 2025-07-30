@@ -29,8 +29,13 @@ jobs:
     
     - name: Generate version file
       run: |
-        # Use setuptools-scm to generate the version.py file
-        python -m setuptools_scm write_to src/version.py
+        # Generate the version.py file using setuptools-scm
+        python -c "
+        import setuptools_scm
+        from setuptools_scm import dump_version
+        version = setuptools_scm.get_version()
+        dump_version('.', version, 'src/version.py')
+        "
     
     - name: Commit version file
       run: |
