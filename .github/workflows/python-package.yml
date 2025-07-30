@@ -30,9 +30,9 @@ jobs:
     - name: Run tests
       run: pytest
     - name: Check types with pyright
-      run: pyright app
+      run: pyright src
     - name: Check types with pytype
-      run: pytype app
+      run: pytype src
 
   build:
     runs-on: ubuntu-latest
