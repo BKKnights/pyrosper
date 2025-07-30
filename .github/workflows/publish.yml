@@ -33,7 +33,7 @@ jobs:
         python -c "
         import setuptools_scm
         from setuptools_scm import dump_version
-        version = "${{ github.ref_name }}"
+        version = '${{ github.ref_name }}'
         dump_version('.', version, 'src/version.py')
         "
     
