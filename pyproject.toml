@@ -1,6 +1,20 @@
 [metadata]
 name = "pyrosper"
 
+[project]
+name = "pyrosper"
+dynamic = ["version"]
+description = "A continuously improving, experimentation framework."
+readme = "README.md"
+authors = [
+    { name = "Robert Plummer", email = "robertleeplummerjr@gmail.com" }
+]
+requires-python = '>=3.7'
+
+[project.urls]
+    "Homepage" = "https://github.com/BKKnights/pyrosper"
+    "Bug Tracker" = "https://github.com/BKKnights/pyrosper/issues"
+
 [tool.interrogate]
 fail-under = 80
 verbose = 1
@@ -18,3 +32,12 @@ dev = [
     "black",
     "isort"
 ]
+
+[build-system]
+requires = ["setuptools", "wheel", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "dirty-tag"
+version_file = "src/version.py"
