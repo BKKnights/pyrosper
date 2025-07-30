@@ -1,7 +1,7 @@
-from src.mock_experiment import MockExperiment
-from src.pyrosper import Pyrosper, pick
-from src.symbol import Symbol
-from src.variant import Variant
+from .mock_experiment import MockExperiment
+from .pyrosper import Pyrosper, pick
+from .symbol import Symbol
+from .variant import Variant
 
 def test_pick_def():
     pyrosper = Pyrosper()

@@ -1,6 +1,6 @@
 from typing import Generic, List, Optional, Set, TypeVar, Any, Type
-from base_experiment import BaseExperiment
-from src.symbol import Symbol
+from .base_experiment import BaseExperiment
+from .symbol import Symbol
 
 T = TypeVar('T')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')

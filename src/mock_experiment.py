@@ -1,9 +1,9 @@
 from typing import Optional, Self
 
-from src.base_experiment import BaseExperiment, ExperimentType
-from src.mock_algorithm import MockAlgorithm
-from src.user_variant import UserVariant
-from src.variant import Variant
+from .base_experiment import BaseExperiment, ExperimentType
+from .mock_algorithm import MockAlgorithm
+from .user_variant import UserVariant
+from .variant import Variant
 
 
 class MockExperiment(BaseExperiment[MockAlgorithm, Variant]):

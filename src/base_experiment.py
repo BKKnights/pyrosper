@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional, TypeVar, Generic, Self
-from variant import Variant
-from user_variant import UserVariant
+from .variant import Variant
+from .user_variant import UserVariant
 
 T = TypeVar('T')
 
