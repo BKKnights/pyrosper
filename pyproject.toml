@@ -9,7 +9,7 @@ readme = "README.md"
 authors = [
     { name = "Robert Plummer", email = "robertleeplummerjr@gmail.com" }
 ]
-requires-python = '>=3.7'
+requires-python = '>=3.10'
 
 [project.urls]
     "Homepage" = "https://github.com/BKKnights/pyrosper"
