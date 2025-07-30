@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, TypeVar, Generic, Self
+from typing import List, Optional, TypeVar, Generic, Self, Any
 from .variant import Variant
 from .user_variant import UserVariant
-
-T = TypeVar('T')
 
 AlgorithmType = TypeVar('AlgorithmType')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
@@ -162,7 +160,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType]):
         self._check_variants()
         return symbol in self.variants[0].picks
 
-    def pick(self, symbol: object) -> T:
+    def pick(self, symbol: object) -> Any:
         self._check_variants()
         variant_index = self.variant_index or 0
         return self.variants[variant_index].get_pick(symbol)
