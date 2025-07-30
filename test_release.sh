@@ -22,12 +22,12 @@ python -c "
 import setuptools_scm
 from setuptools_scm import dump_version
 version = setuptools_scm.get_version()
-dump_version('.', version, 'src/version.py')
+dump_version('.', version, 'src/pyrosper/version.py')
 "
 
 # Show the generated version
 echo "Generated version file:"
-cat src/version.py
+cat src/pyrosper/version.py
 echo ""
 
 # Build the package

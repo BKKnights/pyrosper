@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name="pyrosper",
     use_scm_version={
-        "write_to": "src/version.py",  # This writes a version.py file on build
+        "write_to": "src/pyrosper/version.py",  # This writes a version.py file on build
         "write_to_template": '__version__ = "{version}"\n',
     },
     author="Robert Plummer",
@@ -12,7 +12,8 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     url="https://github.com/BKKnights/pyrosper",
-    packages=find_packages(),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
