@@ -3,12 +3,12 @@ from typing import List, Optional, TypeVar, Generic, Self, Any
 from .variant import Variant
 from .user_variant import UserVariant
 
-AlgorithmType = TypeVar('AlgorithmType')
+AlgorithmType = TypeVar('AlgorithmType', bound='Any')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 VariantType = TypeVar('VariantType', bound='Variant')
 
-class BaseExperiment(ABC, Generic[AlgorithmType, VariantType]):
+class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
     varient_index: int
     name: str
     variants: List[VariantType] = []
@@ -51,15 +51,15 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType]):
             raise ValueError("Empty variants")
 
     @abstractmethod
-    async def get_experiment(self) -> Optional[Self]:
+    async def get_experiment(self) -> Optional['Self']:
         pass
 
     @abstractmethod
-    async def upsert_experiment(self, experiment: Self) -> Self:
+    async def upsert_experiment(self, experiment) -> 'Self':
         pass
 
     @abstractmethod
-    async def delete_experiment(self, experiment: Self) -> None:
+    async def delete_experiment(self, experiment) -> None:
         pass
 
     @abstractmethod

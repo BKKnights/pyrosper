@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from typing import List
-from .base_experiment import Variant
 from .mock_algorithm import MockAlgorithm
 from .mock_experiment import MockExperiment
-from .user_variant import UserVariant
+from .mock_variant import MockVariant
+from .mock_user_variant import MockUserVariant
 
 
 id: str
@@ -12,11 +12,11 @@ name: str
 user_id: str
 index: int
 is_enabled: bool
-user_variant: UserVariant
+user_variant: MockUserVariant
 mock_algorithm: MockAlgorithm
-variant1: Variant
-variant2: Variant
-variants: List[Variant]
+variant1: MockVariant
+variant2: MockVariant
+variants: List[MockVariant]
 variant_index: int
 id: str
 mock_experiment: MockExperiment
@@ -33,10 +33,10 @@ def setup_function():
     user_id = "123"
     index = 0
     is_enabled = True
-    user_variant = UserVariant(experiment_id="", user_id=user_id, index=index)
+    user_variant = MockUserVariant(experiment_id="", user_id=user_id, index=index)
     mock_algorithm = MockAlgorithm()
-    variant1 = Variant("control set", {"foo": MagicMock()})
-    variant2 = Variant("b", {"foo": MagicMock()})
+    variant1 = MockVariant("control set", {"foo": MagicMock()})
+    variant2 = MockVariant("b", {"foo": MagicMock()})
     variants = [variant1, variant2]
     variant_index = 999999
     mock_experiment = MockExperiment(
@@ -82,7 +82,7 @@ async def test_set_for_user_when_experiment_exists(mocker):
     global mock_experiment, user_id
     replacement_experiment = MockExperiment(
         name="replacement",
-        variants=[Variant("control set", {"foo": MagicMock()}), Variant("b", {"foo": MagicMock()})],
+        variants=[MockVariant("control set", {"foo": MagicMock()}), MockVariant("b", {"foo": MagicMock()})],
         is_enabled=True,
         variant_index=0,
         id='123'
@@ -165,7 +165,7 @@ async def test_set_variant_index_for_user_when_disabled_w_user_id_true_w_existin
     global mock_experiment, mock_algorithm, user_id, variant_index
     experiment_id = '456'
     variant_index = mock_experiment.variant_index = 2
-    user_variant = UserVariant(
+    user_variant = MockUserVariant(
         id='123',
         experiment_id=experiment_id,
         user_id=user_id,

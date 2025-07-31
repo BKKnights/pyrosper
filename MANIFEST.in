@@ -1,0 +1,5 @@
+# Exclude files ending with "_test.py"
+exclude *_test.py
+
+# Exclude files starting with "mock_"
+exclude mock_*

@@ -1,10 +1,11 @@
 from .mock_experiment import MockExperiment
-from .pyrosper import Pyrosper, pick
+from .mock_pyrosper import MockPyrosper
+from .pyrosper import pick
 from .symbol import Symbol
-from .variant import Variant
+from .mock_variant import MockVariant
 
 def test_pick_def():
-    pyrosper = Pyrosper()
+    pyrosper = MockPyrosper()
     test_property_provider_symbol = Symbol("test_property_provider")
 
     class MyVariant:
@@ -22,11 +23,11 @@ def test_pick_def():
         MockExperiment(
             name="test_experiment",
             variants=[
-                Variant(
+                MockVariant(
                     name="A",
                     picks={test_property_provider_symbol: variant_a},
                 ),
-                Variant(
+                MockVariant(
                     name="B",
                     picks={test_property_provider_symbol: variant_b},
                 )

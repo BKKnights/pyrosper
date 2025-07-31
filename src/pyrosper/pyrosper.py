@@ -2,7 +2,6 @@ from typing import Generic, List, Optional, Set, TypeVar, Any, Type
 from .base_experiment import BaseExperiment
 from .symbol import Symbol
 
-T = TypeVar('T')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 
 
@@ -85,6 +84,7 @@ def _pick(service_identifier: object):
 
 # Not a decorator, but a function to pick a specific type
 PickType = TypeVar("PickType")
+
 def pick(pyrosper: 'Pyrosper', symbol: Symbol, type: Type[PickType]) -> PickType:
     found = next((experiment for experiment in pyrosper.experiments if experiment.has_pick(symbol)), None)
     if not found:

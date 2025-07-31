@@ -1,16 +1,19 @@
-from typing import Optional, Self
+from typing import Optional, Self, TypeVar, Generic
 
-from .base_experiment import BaseExperiment, ExperimentType
+from .base_experiment import BaseExperiment
 from .mock_algorithm import MockAlgorithm
-from .user_variant import UserVariant
-from .variant import Variant
+from .mock_variant import MockVariant
+from .mock_user_variant import MockUserVariant
 
+MockAlgorithmType = TypeVar('MockAlgorithmType', bound='MockAlgorithm')
+VariantType = TypeVar('VariantType', bound='MockVariant')
+UserVariantType = TypeVar('UserVariantType', bound='MockUserVariant')
 
-class MockExperiment(BaseExperiment[MockAlgorithm, Variant]):
+class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant], Generic[MockAlgorithmType, VariantType]):
     async def get_experiment(self) -> Optional[Self]:
         return self
 
-    async def upsert_experiment(self, experiment: ExperimentType) -> Self:
+    async def upsert_experiment(self, experiment: Self) -> Self:
         return type(self)(
             id=experiment.id,
             name=experiment.name,
@@ -19,16 +22,16 @@ class MockExperiment(BaseExperiment[MockAlgorithm, Variant]):
             variant_index=experiment.variant_index,
         )
 
-    async def delete_experiment(self, experiment: ExperimentType) -> None:
+    async def delete_experiment(self, experiment: Self) -> None:
         pass
 
-    async def get_user_variant(self, user_id: str, experiment_id: str) -> Optional[UserVariant]:
+    async def get_user_variant(self, user_id: str, experiment_id: str) -> Optional[MockUserVariant]:
         pass
 
-    async def upsert_user_variant(self, user_variant: UserVariant) -> None:
+    async def upsert_user_variant(self, user_variant: MockUserVariant) -> None:
         pass
 
-    async def delete_user_variant(self, user_variant: UserVariant) -> None:
+    async def delete_user_variant(self, user_variant: MockUserVariant) -> None:
         pass
 
     async def delete_user_variants(self) -> None:
