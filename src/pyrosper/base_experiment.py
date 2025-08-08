@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, TypeVar, Generic, Self, Any
+from typing import List, Optional, TypeVar, Generic, Self, Any, Type
 from .variant import Variant
 from .user_variant import UserVariant
 
-AlgorithmType = TypeVar('AlgorithmType', bound='Any')
+AlgorithmType = TypeVar('AlgorithmType')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 VariantType = TypeVar('VariantType', bound='Variant')
+PickType = TypeVar("PickType")
 
 class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
-    varient_index: int
+    variant_index: int
     name: str
     variants: List[VariantType] = []
     is_enabled: bool
@@ -160,10 +161,15 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         self._check_variants()
         return symbol in self.variants[0].picks
 
-    def pick(self, symbol: object) -> Any:
+    def pick(self, symbol: object, type_of_pick: Type[PickType]) -> PickType:
         self._check_variants()
         variant_index = self.variant_index or 0
-        return self.variants[variant_index].get_pick(symbol)
+        value = self.variants[variant_index].get_pick(symbol)
+        if value is None:
+            raise RuntimeError(f"`unable to find {symbol}")
+        if not isinstance(value, type_of_pick):
+            raise TypeError(f"Expected type {type_of_pick}, but got {value} for symbol {symbol}")
+        return value
 
     async def enable(self) -> None:
         experiment = await self.get_experiment()

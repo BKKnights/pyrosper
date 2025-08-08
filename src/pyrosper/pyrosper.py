@@ -1,9 +1,11 @@
-from typing import Generic, List, Optional, Set, TypeVar, Any, Type
+from typing import Generic, List, Optional, Set, TypeVar, Any, Type, Union, Self
+
 from .base_experiment import BaseExperiment
 from .symbol import Symbol
 
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 
+PickType = TypeVar("PickType")
 
 class Pyrosper(Generic[ExperimentType]):
     def __init__(self):
@@ -17,10 +19,10 @@ class Pyrosper(Generic[ExperimentType]):
     def has_pick(self, symbol: object) -> bool:
         return any(experiment.has_pick(symbol) for experiment in self.experiments)
 
-    def pick(self, symbol: object) -> Any:
+    def pick(self, symbol: object, type_of_pick: Type[PickType]) -> PickType:
         for experiment in self.experiments:
             if experiment.has_pick(symbol):
-                return experiment.pick(symbol)
+                return experiment.pick(symbol, type_of_pick)
         raise ValueError(f"Unable to find {symbol}")
 
     def validate(self, experiment: ExperimentType) -> Set[object]:
@@ -41,7 +43,7 @@ class Pyrosper(Generic[ExperimentType]):
 
         return pick_symbols
 
-    def with_experiment(self, experiment: ExperimentType) -> 'Pyrosper':
+    def with_experiment(self, experiment: ExperimentType) -> 'Self':
         new_symbols = self.validate(experiment)
         self.experiments.append(experiment)
         self.used_symbols.update(new_symbols)
@@ -82,14 +84,9 @@ def _pick(service_identifier: object):
     return decorator
 
 
-# Not a decorator, but a function to pick a specific type
-PickType = TypeVar("PickType")
-
-def pick(pyrosper: 'Pyrosper', symbol: Symbol, type: Type[PickType]) -> PickType:
-    found = next((experiment for experiment in pyrosper.experiments if experiment.has_pick(symbol)), None)
-    if not found:
-        raise RuntimeError(f"`unable to find {symbol}")
-    value = found.pick(symbol)
-    if not isinstance(value, type):
-        raise TypeError(f"Expected type {type}, but got {value} for symbol {symbol}")
-    return value
+def pick(pyrosper: 'Pyrosper', symbol: Union[object, Symbol], type_of_pick: Type[PickType]) -> PickType:
+    value = None
+    for experiment in pyrosper.experiments:
+        if experiment.has_pick(symbol):
+            return experiment.pick(symbol, type_of_pick)
+    raise ValueError(f"Unable to find {symbol}")

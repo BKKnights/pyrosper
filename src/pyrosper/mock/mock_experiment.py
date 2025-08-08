@@ -1,6 +1,6 @@
 from typing import Optional, Self, TypeVar, Generic
 
-from .base_experiment import BaseExperiment
+from ..base_experiment import BaseExperiment
 from .mock_algorithm import MockAlgorithm
 from .mock_variant import MockVariant
 from .mock_user_variant import MockUserVariant
@@ -10,6 +10,9 @@ VariantType = TypeVar('VariantType', bound='MockVariant')
 UserVariantType = TypeVar('UserVariantType', bound='MockUserVariant')
 
 class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant], Generic[MockAlgorithmType, VariantType]):
+    user_id: str
+    algorithm: Optional[MockAlgorithm] = None
+
     async def get_experiment(self) -> Optional[Self]:
         return self
 
@@ -38,10 +41,19 @@ class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant]
         pass
 
     async def get_algorithm(self) -> MockAlgorithm:
-        return MockAlgorithm()
+        if self.algorithm:
+            return self.algorithm
+        self.algorithm = MockAlgorithm()
+        return self.algorithm
+
+    async def set_for_user(self, user_id: Optional[str] = None) -> None:
+        if user_id is None:
+            raise ValueError("User ID must be provided")
+        await super().set_for_user(user_id)
+        self.user_id = user_id
 
     async def get_variant_index(self, algorithm: MockAlgorithm) -> int:
-        return 0
+        return algorithm.variant_index
 
     async def reward_algorithm(self, algorithm: MockAlgorithm, user_variant_index: int, score: float) -> MockAlgorithm:
         return MockAlgorithm()
