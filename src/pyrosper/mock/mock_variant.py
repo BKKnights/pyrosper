@@ -1,4 +1,4 @@
-from .variant import Variant
+from ..variant import Variant
 
 class MockVariant(Variant):
     pass

@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 from typing import List
-from .mock_algorithm import MockAlgorithm
-from .mock_experiment import MockExperiment
-from .mock_variant import MockVariant
-from .mock_user_variant import MockUserVariant
+from .mock.mock_algorithm import MockAlgorithm
+from .mock.mock_experiment import MockExperiment
+from .mock.mock_variant import MockVariant
+from .mock.mock_user_variant import MockUserVariant
 
 
 id: str

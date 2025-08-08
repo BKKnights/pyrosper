@@ -3,13 +3,13 @@ from typing import List, Optional, TypeVar, Generic, Self, Any
 from .variant import Variant
 from .user_variant import UserVariant
 
-AlgorithmType = TypeVar('AlgorithmType', bound='Any')
+AlgorithmType = TypeVar('AlgorithmType')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 VariantType = TypeVar('VariantType', bound='Variant')
 
 class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
-    varient_index: int
+    variant_index: int
     name: str
     variants: List[VariantType] = []
     is_enabled: bool

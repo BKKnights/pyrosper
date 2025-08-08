@@ -1,4 +1,5 @@
-from typing import Generic, List, Optional, Set, TypeVar, Any, Type
+from typing import Generic, List, Optional, Set, TypeVar, Any, Type, Union, Self
+
 from .base_experiment import BaseExperiment
 from .symbol import Symbol
 
@@ -41,7 +42,7 @@ class Pyrosper(Generic[ExperimentType]):
 
         return pick_symbols
 
-    def with_experiment(self, experiment: ExperimentType) -> 'Pyrosper':
+    def with_experiment(self, experiment: ExperimentType) -> 'Self':
         new_symbols = self.validate(experiment)
         self.experiments.append(experiment)
         self.used_symbols.update(new_symbols)
@@ -85,11 +86,13 @@ def _pick(service_identifier: object):
 # Not a decorator, but a function to pick a specific type
 PickType = TypeVar("PickType")
 
-def pick(pyrosper: 'Pyrosper', symbol: Symbol, type: Type[PickType]) -> PickType:
-    found = next((experiment for experiment in pyrosper.experiments if experiment.has_pick(symbol)), None)
-    if not found:
+def pick(pyrosper: 'Pyrosper', symbol: Union[object, Symbol], type_of_pick: Type[PickType]) -> PickType:
+    value = None
+    for experiment in pyrosper.experiments:
+        if experiment.has_pick(symbol):
+            value = experiment.pick(symbol)
+    if value is None:
         raise RuntimeError(f"`unable to find {symbol}")
-    value = found.pick(symbol)
-    if not isinstance(value, type):
-        raise TypeError(f"Expected type {type}, but got {value} for symbol {symbol}")
+    if not isinstance(value, type_of_pick):
+        raise TypeError(f"Expected type {type_of_pick}, but got {value} for symbol {symbol}")
     return value
