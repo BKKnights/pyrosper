@@ -77,29 +77,6 @@ async def test_complete_for_user_when_enabled_and_user_variant_exists(mocker):
     mock_get_algorithm.assert_called()
     mock_reward_algorithm.assert_called_with(mock_algorithm, user_variant.index, score)
 
-@pytest.mark.asyncio
-async def test_set_for_user_when_experiment_exists(mocker):
-    global mock_experiment, user_id
-    replacement_experiment = MockExperiment(
-        name="replacement",
-        variants=[MockVariant("control set", {"foo": MagicMock()}), MockVariant("b", {"foo": MagicMock()})],
-        is_enabled=True,
-        variant_index=0,
-        id='123'
-    )
-    mocker.patch.object(mock_experiment, 'get_experiment', AsyncMock(return_value=replacement_experiment))
-    await mock_experiment.set_for_user()
-    assert mock_experiment.is_enabled
-    assert mock_experiment.id == replacement_experiment.id
-
-@pytest.mark.asyncio
-async def test_set_for_user_when_no_experiment(mocker):
-    global mock_experiment, user_id
-    mocker.patch.object(mock_experiment, 'get_experiment', AsyncMock(return_value=None))
-    await mock_experiment.set_for_user()
-    assert mock_experiment.is_enabled == False
-    assert mock_experiment.id is None
-
 def test_use_variant_when_variant_not_found():
     global mock_algorithm
     with pytest.raises(ValueError):

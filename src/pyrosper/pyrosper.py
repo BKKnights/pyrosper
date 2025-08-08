@@ -5,6 +5,7 @@ from .symbol import Symbol
 
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 
+PickType = TypeVar("PickType")
 
 class Pyrosper(Generic[ExperimentType]):
     def __init__(self):
@@ -18,10 +19,10 @@ class Pyrosper(Generic[ExperimentType]):
     def has_pick(self, symbol: object) -> bool:
         return any(experiment.has_pick(symbol) for experiment in self.experiments)
 
-    def pick(self, symbol: object) -> Any:
+    def pick(self, symbol: object, type_of_pick: Type[PickType]) -> PickType:
         for experiment in self.experiments:
             if experiment.has_pick(symbol):
-                return experiment.pick(symbol)
+                return experiment.pick(symbol, type_of_pick)
         raise ValueError(f"Unable to find {symbol}")
 
     def validate(self, experiment: ExperimentType) -> Set[object]:
@@ -83,16 +84,9 @@ def _pick(service_identifier: object):
     return decorator
 
 
-# Not a decorator, but a function to pick a specific type
-PickType = TypeVar("PickType")
-
 def pick(pyrosper: 'Pyrosper', symbol: Union[object, Symbol], type_of_pick: Type[PickType]) -> PickType:
     value = None
     for experiment in pyrosper.experiments:
         if experiment.has_pick(symbol):
-            value = experiment.pick(symbol)
-    if value is None:
-        raise RuntimeError(f"`unable to find {symbol}")
-    if not isinstance(value, type_of_pick):
-        raise TypeError(f"Expected type {type_of_pick}, but got {value} for symbol {symbol}")
-    return value
+            return experiment.pick(symbol, type_of_pick)
+    raise ValueError(f"Unable to find {symbol}")
