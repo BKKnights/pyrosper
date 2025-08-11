@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from contextlib import ContextDecorator
 from contextvars import ContextVar
 from typing import Optional
@@ -13,20 +14,20 @@ def get_current() -> 'Pyrosper':
     return result
 
 
-class BaseContext(ContextDecorator):
+class BaseContext(ABC, ContextDecorator):
     """
     Context manager and decorator for Pyrosper context isolation.
     
-    This class can be extended to provide custom context setup and teardown.
+    This class can and should be extended to provide custom context setup and teardown.
     It automatically handles context variable management and cleanup.
     
     Usage as context manager:
-        with Context() as pyrosper:
+        with BaseContext() as pyrosper:
             # Use pyrosper instance
             pass
     
     Usage as decorator:
-        @Context()
+        @BaseContext()
         def my_function():
             pyrosper = get_current_pyrosper()
             # Use pyrosper instance
@@ -36,7 +37,8 @@ class BaseContext(ContextDecorator):
     def __init__(self):
         self.instance_token = None
         self.pyrosper_instance = None
-        
+
+    @abstractmethod
     def setup(self) -> 'Pyrosper':
         """
         Setup and return pyrosper. Override this method in subclasses to provide custom setup.

@@ -80,10 +80,10 @@ print(greeting)  # Will print one of: "Hello!", "Hi there!", or "Hey!"
 ### Using the Context System
 
 ```python
-from pyrosper import Context, get_current, context
+from pyrosper import BaseContext, get_current
 
 # Create a custom context
-class UserContext(Context):
+class UserContext(BaseContext):
     def __init__(self, user_id: str):
         super().__init__()
         self.user_id = user_id
@@ -100,7 +100,6 @@ with UserContext("user123") as pyrosper:
     greeting = current.pick(key)
 
 # Use as decorator
-@context()
 def get_user_greeting():
     pyrosper = get_current()
     return pyrosper.pick(key)
@@ -291,7 +290,7 @@ with UserContext("user1") as pyrosper1:
 - **`BaseExperiment`**: Abstract base class for experiments
 - **`Variant`**: Represents a single variant in an experiment
 - **`Symbol`**: Unique identifier for experiment values
-- **`Context`**: Context manager for pyrosper instances
+- **`BaseContext`**: Context manager for pyrosper instances
 
 ### Key Methods
 

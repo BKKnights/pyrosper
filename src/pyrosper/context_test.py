@@ -12,25 +12,24 @@ from .mock.mock_variant import MockVariant
 from .symbol import Symbol
 from .pyrosper import Pyrosper
 
+
+class Context(BaseContext):
+    """A simple test context that implements setup"""
+
+    def setup(self):
+        return Pyrosper().with_experiment(MockExperiment(name="test experiment"))
+
 class TestContext:
     """Tests for the Context class"""
-    
     def test_context_init(self):
         """Test Context initialization"""
-        ctx = BaseContext()
+        ctx = Context()
         assert ctx.instance_token is None
         assert ctx.pyrosper_instance is None
-
-    @pytest.mark.asyncio
-    async def test_setup_not_implemented(self):
-        """Test that setup raises NotImplementedError by default"""
-        ctx = BaseContext()
-        with pytest.raises(NotImplementedError, match="Class must implement setup\\(\\)"):
-            ctx.setup()
     
     def test_teardown_context_default(self):
         """Test that teardown_context doesn't raise by default"""
-        ctx = BaseContext()
+        ctx = Context()
         # Should not raise any exception
         ctx.teardown_context()
     
