@@ -5,28 +5,32 @@ Test demonstrating how to use PyrosperContext.
 import asyncio
 import pytest
 from unittest.mock import Mock
-from .context import Context, get_current, context_storage, instance_storage, context
 
+from .context import BaseContext, get_current, instance_storage
+from .mock.mock_experiment import MockExperiment
+from .mock.mock_variant import MockVariant
+from .symbol import Symbol
+from .pyrosper import Pyrosper
 
 class TestContext:
     """Tests for the Context class"""
     
     def test_context_init(self):
         """Test Context initialization"""
-        ctx = Context()
-        assert ctx.token is None
+        ctx = BaseContext()
         assert ctx.instance_token is None
         assert ctx.pyrosper_instance is None
-    
-    def test_setup_context_not_implemented(self):
-        """Test that setup_context raises NotImplementedError by default"""
-        ctx = Context()
-        with pytest.raises(NotImplementedError, match="Class must implement setup_context\\(\\)"):
-            ctx.setup_context()
+
+    @pytest.mark.asyncio
+    async def test_setup_not_implemented(self):
+        """Test that setup raises NotImplementedError by default"""
+        ctx = BaseContext()
+        with pytest.raises(NotImplementedError, match="Class must implement setup\\(\\)"):
+            ctx.setup()
     
     def test_teardown_context_default(self):
         """Test that teardown_context doesn't raise by default"""
-        ctx = Context()
+        ctx = BaseContext()
         # Should not raise any exception
         ctx.teardown_context()
     
@@ -34,31 +38,29 @@ class TestContext:
         """Test Context as context manager"""
         mock_pyrosper = Mock()
         
-        class TestContext(Context):
-            def setup_context(self):
+        class TestContext2(BaseContext):
+            def setup(self):
                 return mock_pyrosper
         
-        ctx = TestContext()
+        ctx = TestContext2()
         with ctx as pyrosper:
             assert pyrosper == mock_pyrosper
             # Check that context variables are set
-            assert context_storage.get() == f"pyrosper_context_{id(ctx)}"
             assert instance_storage.get() == mock_pyrosper
     
     def test_context_as_context_manager_with_exception(self):
         """Test Context as context manager handles exceptions properly"""
         mock_pyrosper = Mock()
         
-        class TestContext(Context):
-            def setup_context(self):
+        class TestContext2(BaseContext):
+            def setup(self):
                 return mock_pyrosper
         
         with pytest.raises(ValueError):
-            with TestContext() as pyrosper:
+            with TestContext2() as pyrosper:
                 raise ValueError("test exception")
         
         # Check that context variables are reset
-        assert context_storage.get() == "unknown"
         assert instance_storage.get() is None
     
     def test_context_teardown_called(self):
@@ -66,15 +68,15 @@ class TestContext:
         mock_pyrosper = Mock()
         teardown_called = False
         
-        class TestContext(Context):
-            def setup_context(self):
+        class TestContext2(BaseContext):
+            def setup(self):
                 return mock_pyrosper
             
             def teardown_context(self):
                 nonlocal teardown_called
                 teardown_called = True
         
-        with TestContext():
+        with TestContext2():
             pass
         
         assert teardown_called
@@ -84,16 +86,16 @@ class TestContext:
         mock_pyrosper1 = Mock()
         mock_pyrosper2 = Mock()
         
-        class TestContext(Context):
+        class TestContext2(BaseContext):
             def __init__(self, pyrosper_instance):
                 super().__init__()
                 self.pyrosper_instance = pyrosper_instance
             
-            def setup_context(self):
+            def setup(self):
                 return self.pyrosper_instance
         
-        ctx1 = TestContext(mock_pyrosper1)
-        ctx2 = TestContext(mock_pyrosper2)
+        ctx1 = TestContext2(mock_pyrosper1)
+        ctx2 = TestContext2(mock_pyrosper2)
         
         with ctx1 as pyrosper1:
             assert pyrosper1 == mock_pyrosper1
@@ -106,7 +108,6 @@ class TestContext:
             assert instance_storage.get() == mock_pyrosper1
         
         # After both contexts exit, should be reset
-        assert context_storage.get() == "unknown"
         assert instance_storage.get() is None
 
 
@@ -144,80 +145,78 @@ class TestGetCurrent:
             instance_storage.reset(token)
 
 
-class TestContextDecorator:
-    """Tests for the context decorator"""
-    
-    def test_context_sync_function(self):
-        """Test context decorator with synchronous functions"""
-        
-        @context()
-        def test_function():
-            return "test_result"
-        
-        # Test that the function works normally
-        result = test_function()
-        assert result == "test_result"
-        
-        # Test that the function preserves its name
-        assert test_function.__name__ == "test_function"
-    
-    def test_context_async_function(self):
-        """Test context decorator with asynchronous functions"""
-        
-        @context()
-        async def test_async_function():
-            return "async_test_result"
-        
-        # Test that the async function works normally
-        async def run_test():
-            result = await test_async_function()
-            assert result == "async_test_result"
-            # Test that the function preserves its name
-            assert test_async_function.__name__ == "test_async_function"
-        
-        asyncio.run(run_test())
-    
-    def test_context_with_exception(self):
-        """Test context decorator properly handles exceptions"""
-        
-        @context()
-        def test_function_with_exception():
-            raise ValueError("test exception")
-        
-        with pytest.raises(ValueError, match="test exception"):
-            test_function_with_exception()
-    
-    def test_context_async_with_exception(self):
-        """Test context decorator properly handles async exceptions"""
-        
-        @context()
-        async def test_async_function_with_exception():
-            raise ValueError("async test exception")
-        
-        async def run_test():
-            with pytest.raises(ValueError, match="async test exception"):
-                await test_async_function_with_exception()
-        
-        asyncio.run(run_test())
-    
-    def test_context_preserves_function_metadata(self):
-        """Test that context decorator preserves function metadata"""
-        
-        @context()
-        def test_function_with_docstring():
-            """This is a test function with a docstring."""
-            return "result"
-        
-        assert test_function_with_docstring.__doc__ == "This is a test function with a docstring."
-        assert test_function_with_docstring.__name__ == "test_function_with_docstring"
-    
-    def test_context_async_preserves_function_metadata(self):
-        """Test that context decorator preserves async function metadata"""
-        
-        @context()
-        async def test_async_function_with_docstring():
-            """This is an async test function with a docstring."""
-            return "async_result"
-        
-        assert test_async_function_with_docstring.__doc__ == "This is an async test function with a docstring."
-        assert test_async_function_with_docstring.__name__ == "test_async_function_with_docstring"
+    @pytest.mark.asyncio
+    async def test_context_race_conditions(self):
+        """Test that context prevents race conditions under load with multiple users"""
+        key = Symbol("test_key")
+        variant_index_a = 0
+        variant_index_b = 1
+        value_a = "value_a"
+        value_b = "value_b"
+        user_1 = "user_1"
+        user_2 = "user_2"
+        user_3 = "user_3"
+        user_4 = "user_4"
+        picks_a = {key: value_a}
+        picks_b = {key: value_b}
+        picks = [picks_a, picks_b]
+        variant_a = MockVariant(name="A", picks=picks_a)
+        variant_b = MockVariant(name="B", picks=picks_b)
+        variants = [variant_a, variant_b]
+        all_pyrosper_instances = []
+
+        class MockContext(BaseContext):
+            def setup(self):
+                experiment = MockExperiment(
+                    name="mock experiment",
+                    variants=variants,
+                )
+                # Simulate setting up a user context with a specific variant
+                return Pyrosper().with_experiment(experiment)
+
+        class AbTest:
+            injected: str
+
+            def __init__(self):
+                pyrosper = get_current()
+                self.pyrosper = pyrosper
+                self.injected = pyrosper.pick(key, str)
+
+
+        async def user_task(user_id: str, variant_index: int, delay: float):
+            with MockContext() as pyrosper:
+                # Verify context
+                if pyrosper in all_pyrosper_instances:
+                    raise RuntimeError("Pyrosper instance reused across users")
+                all_pyrosper_instances.append(pyrosper)
+                await pyrosper.set_for_user(user_id)
+                experiment = pyrosper.get_experiment("mock experiment")
+                experiment.use_variant(variants[variant_index].name)
+                current = get_current()
+                algorithm = await experiment.get_algorithm()
+                variant_index_from_experiment = await experiment.get_variant_index(algorithm)
+                assert variant_index_from_experiment == variant_index
+                assert current is pyrosper
+                """Simulate a user task."""
+                await asyncio.sleep(delay)
+                ab_test = AbTest()
+                should_be_current = get_current()
+                assert should_be_current is pyrosper
+                assert ab_test.pyrosper == pyrosper
+                assert ab_test.injected == picks[variant_index][key]
+                return f"{user_id} {ab_test.injected}"
+
+        # Run users concurrently
+        results = await asyncio.gather(
+            user_task(user_1, variant_index_a, 5.1),
+            user_task(user_2, variant_index_b, 0.01),
+            user_task(user_3, variant_index_a, 0.05),
+            user_task(user_4, variant_index_b, 0.02),
+        )
+
+        # Verify results
+        assert results[0] == f"{user_1} {value_a}"
+        assert results[1] == f"{user_2} {value_b}"
+        assert results[2] == f"{user_3} {value_a}"
+        assert results[3] == f"{user_4} {value_b}"
+

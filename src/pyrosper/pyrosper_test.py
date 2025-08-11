@@ -7,7 +7,6 @@ from .mock.mock_pyrosper import MockPyrosper
 from .pyrosper import Pyrosper, pick
 from .symbol import Symbol
 from .mock.mock_variant import MockVariant
-from .context import context
 
 
 class TestPyrosper:
@@ -233,60 +232,3 @@ class TestPickFunction:
         
         with pytest.raises(TypeError, match="Expected type <class 'int'>, but got"):
             pick(pyrosper, test_symbol, int)
-
-
-class TestContextDecorator:
-    """Tests for the context decorator"""
-    
-    def test_context_sync_function(self):
-        """Test context decorator with synchronous functions"""
-        
-        @context()
-        def test_function():
-            return "test_result"
-        
-        # Test that the function works normally
-        result = test_function()
-        assert result == "test_result"
-        
-        # Test that the function preserves its name
-        assert test_function.__name__ == "test_function"
-    
-    def test_context_async_function(self):
-        """Test context decorator with asynchronous functions"""
-        
-        @context()
-        async def test_async_function():
-            return "async_test_result"
-        
-        # Test that the async function works normally
-        async def run_test():
-            result = await test_async_function()
-            assert result == "async_test_result"
-            # Test that the function preserves its name
-            assert test_async_function.__name__ == "test_async_function"
-        
-        asyncio.run(run_test())
-    
-    def test_context_with_exception(self):
-        """Test context decorator properly handles exceptions"""
-        
-        @context()
-        def test_function_with_exception():
-            raise ValueError("test exception")
-        
-        with pytest.raises(ValueError, match="test exception"):
-            test_function_with_exception()
-    
-    def test_context_async_with_exception(self):
-        """Test context decorator properly handles async exceptions"""
-        
-        @context()
-        async def test_async_function_with_exception():
-            raise ValueError("async test exception")
-        
-        async def run_test():
-            with pytest.raises(ValueError, match="async test exception"):
-                await test_async_function_with_exception()
-        
-        asyncio.run(run_test())

@@ -88,7 +88,7 @@ class UserContext(Context):
         super().__init__()
         self.user_id = user_id
     
-    def setup_context(self):
+    def setup(self):
         # Create and configure pyrosper for this user
         pyrosper = Pyrosper()
         # Add experiments, configure algorithms, etc.
@@ -253,8 +253,10 @@ pyrosper = Pyrosper()
 pyrosper.with_experiment(greeting_exp).with_experiment(color_exp)
 
 # Use both experiments
-greeting = pyrosper.pick(Symbol("greeting"))
-color = pyrosper.pick(Symbol("color"))
+greeting_key = Symbol("greeting")
+color_key = Symbol("color")
+greeting = pyrosper.pick(greeting_key)
+color = pyrosper.pick(color_key)
 ```
 
 ### Experiment Validation
@@ -272,12 +274,13 @@ pyrosper.with_experiment(experiment)
 ### Context Isolation
 
 ```python
+key = Symbol("greeting")
 # Each context has its own pyrosper instance
 with UserContext("user1") as pyrosper1:
     with UserContext("user2") as pyrosper2:
         # pyrosper1 and pyrosper2 are independent
-        greeting1 = pyrosper1.pick(Symbol("greeting"))
-        greeting2 = pyrosper2.pick(Symbol("greeting"))
+        greeting1 = pyrosper1.pick(key)
+        greeting2 = pyrosper2.pick(key)
 ```
 
 ## API Reference

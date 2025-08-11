@@ -1,48 +1,9 @@
-import asyncio
 from contextlib import ContextDecorator
 from contextvars import ContextVar
-from functools import wraps
-from typing import Optional, Any
+from typing import Optional
 from .pyrosper import Pyrosper
 
-context_storage = ContextVar("pyrosper_context_storage", default="unknown")
-instance_storage = ContextVar("pyrosper_instance_storage", default=None)
-
-def context():
-    def decorator(func):
-        # Generate context name from function type
-        if asyncio.iscoroutinefunction(func):
-            context_name = f"async_{func.__name__}"
-        else:
-            context_name = f"sync_{func.__name__}"
-
-        if asyncio.iscoroutinefunction(func):
-            @wraps(func)
-            async def async_wrapper(*args, **kwargs):
-                token = context_storage.set(context_name)
-                try:
-                    return await func(*args, **kwargs)
-                except Exception as e:
-                    raise e
-                finally:
-                    context_storage.reset(token)
-
-            return async_wrapper
-        else:
-            @wraps(func)
-            def sync_wrapper(*args, **kwargs):
-                token = context_storage.set(context_name)
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    raise e
-                finally:
-                    context_storage.reset(token)
-
-            return sync_wrapper
-
-    return decorator
-
+instance_storage: ContextVar[Optional['Pyrosper']] = ContextVar("pyrosper_instance_storage", default=None)
 
 def get_current() -> 'Pyrosper':
     """Get the current pyrosper instance from context."""
@@ -52,7 +13,7 @@ def get_current() -> 'Pyrosper':
     return result
 
 
-class Context(ContextDecorator):
+class BaseContext(ContextDecorator):
     """
     Context manager and decorator for Pyrosper context isolation.
     
@@ -73,19 +34,18 @@ class Context(ContextDecorator):
     """
     
     def __init__(self):
-        self.token = None
         self.instance_token = None
         self.pyrosper_instance = None
         
-    def setup_context(self) -> Any:
+    def setup(self) -> 'Pyrosper':
         """
-        Setup the context. Override this method in subclasses to provide custom setup.
+        Setup and return pyrosper. Override this method in subclasses to provide custom setup.
         
         Returns:
             The pyrosper instance to use in this context.
         """
         # Default implementation - subclasses should override
-        raise NotImplementedError("Class must implement setup_context()")
+        raise NotImplementedError("Class must implement setup()")
         
     def teardown_context(self) -> None:
         """
@@ -96,12 +56,8 @@ class Context(ContextDecorator):
         
     def __enter__(self):
         # Setup context - call the setup method to create/get the pyrosper instance
-        self.pyrosper_instance = self.setup_context()
-        
-        # Store context name
-        context_name = f"pyrosper_context_{id(self)}"
-        self.token = context_storage.set(context_name)
-        
+        self.pyrosper_instance = self.setup()
+
         # Store pyrosper instance
         self.instance_token = instance_storage.set(self.pyrosper_instance)
         
@@ -114,8 +70,6 @@ class Context(ContextDecorator):
         # Reset context variables
         if self.instance_token is not None:
             instance_storage.reset(self.instance_token)
-        if self.token is not None:
-            context_storage.reset(self.token)
-            
+
         return False
 

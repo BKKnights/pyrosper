@@ -41,10 +41,7 @@ class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant]
         pass
 
     async def get_algorithm(self) -> MockAlgorithm:
-        if self.algorithm:
-            return self.algorithm
-        self.algorithm = MockAlgorithm()
-        return self.algorithm
+        return MockAlgorithm()
 
     async def set_for_user(self, user_id: Optional[str] = None) -> None:
         if user_id is None:
@@ -53,7 +50,7 @@ class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant]
         self.user_id = user_id
 
     async def get_variant_index(self, algorithm: MockAlgorithm) -> int:
-        return algorithm.variant_index
+        return self.variant_index
 
     async def reward_algorithm(self, algorithm: MockAlgorithm, user_variant_index: int, score: float) -> MockAlgorithm:
         return MockAlgorithm()

@@ -163,6 +163,7 @@ async def test_set_variant_index_for_user_when_disabled_w_user_id_true_w_existin
 @pytest.mark.asyncio
 async def test_get_variant_when_disabled():
     mock_experiment.is_enabled = False
+    mock_experiment.variant_index = 0
     result = await mock_experiment.get_variant(user_id)
     assert result is None
 
@@ -170,5 +171,6 @@ async def test_get_variant_when_disabled():
 async def test_get_variant_when_enabled():
     global mock_experiment, user_id, variant1
     mock_experiment.is_enabled = True
+    mock_experiment.variant_index = 0
     result = await mock_experiment.get_variant(user_id)
     assert result == variant1
