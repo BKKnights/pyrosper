@@ -115,7 +115,7 @@ class TestGetCurrent:
     
     def test_get_current_success(self):
         """Test get_current returns the current pyrosper instance"""
-        mock_pyrosper = Mock()
+        mock_pyrosper = Pyrosper()
         
         # Set the instance in context
         token = instance_storage.set(mock_pyrosper)

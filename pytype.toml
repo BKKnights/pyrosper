@@ -5,11 +5,12 @@
 # Space-separated list of files or directories to exclude.
 exclude = [
     '**/*_test.py',
+    '**/mock/*',
 ]
 
 # Space-separated list of files or directories to process.
 inputs = [
-    './app',
+    './src/pyrosper',
 ]
 
 # Keep going past errors to analyze as many files as possible.
