@@ -1,4 +1,4 @@
-from src.pyrosper.base_context import BaseContext
+from ..base_context import BaseContext
 from .mock_experiment import MockExperiment
 from .mock_pyrosper import MockPyrosper
 from .mock_variant import MockVariant
