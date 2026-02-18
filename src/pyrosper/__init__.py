@@ -6,7 +6,7 @@ from .variant import Variant
 from .symbol import Symbol
 from .user_variant import UserVariant
 from .pyrosper import Pyrosper, pick
-from .context import BaseContext, get_current, instance_storage
+from .base_context import BaseContext
 
 __all__ = [
     # Version
@@ -22,9 +22,5 @@ __all__ = [
     
     # Functions
     "pick",
-    "get_current",
-    
-    # Context variables
-    "instance_storage",
 ]
 
