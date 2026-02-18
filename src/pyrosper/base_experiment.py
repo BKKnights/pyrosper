@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, TypeVar, Generic, Self, Any, Type
+from typing import List, Optional, TypeVar, Generic, Self, Type
 from .variant import Variant
 from .user_variant import UserVariant
 
@@ -7,7 +7,7 @@ AlgorithmType = TypeVar('AlgorithmType')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 VariantType = TypeVar('VariantType', bound='Variant')
-PickType = TypeVar("PickType")
+PickType = TypeVar('PickType')
 
 class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
     variant_index: int

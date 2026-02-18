@@ -1,20 +1,24 @@
-from abc import ABC, abstractmethod
+from abc import ABC, abstractmethod, ABCMeta
 from contextlib import ContextDecorator
 from contextvars import ContextVar
-from typing import Optional
+from typing import Optional, Generic, TypeVar
+
 from .pyrosper import Pyrosper
 
-instance_storage: ContextVar[Optional['Pyrosper']] = ContextVar("pyrosper_instance_storage", default=None)
+PyrosperType = TypeVar('PyrosperType', bound='Pyrosper')
 
-def get_current() -> 'Pyrosper':
-    """Get the current pyrosper instance from context."""
-    result: Optional['Pyrosper'] = instance_storage.get()
-    if not result:
-        raise RuntimeError("No pyrosper instance found in context")
-    return result
+class BaseMetaContext(ABCMeta, ContextDecorator, Generic[PyrosperType]):
+    typed_instance_storage: ContextVar[Optional[PyrosperType]] = ContextVar("pyrosper_typed_instance_storage", default=None)
+
+    def get_current(cls) -> PyrosperType:
+        """Get the current pyrosper instance from context."""
+        result: Optional[PyrosperType] = cls.typed_instance_storage.get()
+        if not result:
+            raise RuntimeError("No pyrosper instance found in context")
+        return result
 
 
-class BaseContext(ABC, ContextDecorator):
+class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMetaContext):
     """
     Context manager and decorator for Pyrosper context isolation.
     
@@ -29,17 +33,20 @@ class BaseContext(ABC, ContextDecorator):
     Usage as decorator:
         @BaseContext()
         def my_function():
-            pyrosper = get_current_pyrosper()
+            pyrosper = get_current()
             # Use pyrosper instance
             pass
     """
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}()"
     
     def __init__(self):
         self.instance_token = None
-        self.pyrosper_instance = None
+        self.pyrosper_instance: Optional[PyrosperType] = None
 
     @abstractmethod
-    def setup(self) -> 'Pyrosper':
+    def setup(self) -> PyrosperType:
         """
         Setup and return pyrosper. Override this method in subclasses to provide custom setup.
         
@@ -56,12 +63,12 @@ class BaseContext(ABC, ContextDecorator):
         # Default implementation - subclasses can override
         pass
         
-    def __enter__(self):
+    def __enter__(self) -> PyrosperType:
         # Setup context - call the setup method to create/get the pyrosper instance
         self.pyrosper_instance = self.setup()
 
         # Store pyrosper instance
-        self.instance_token = instance_storage.set(self.pyrosper_instance)
+        self.instance_token = self.__class__.typed_instance_storage.set(self.pyrosper_instance)
         
         return self.pyrosper_instance
         
@@ -71,7 +78,6 @@ class BaseContext(ABC, ContextDecorator):
         
         # Reset context variables
         if self.instance_token is not None:
-            instance_storage.reset(self.instance_token)
+            self.__class__.typed_instance_storage.reset(self.instance_token)
 
         return False
-

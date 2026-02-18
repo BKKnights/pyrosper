@@ -1,8 +1,5 @@
 from typing import Any, Dict, Union
 
-
-
-
 class Variant:
     # also allow picks to be a class
     def __init__(self, name: str, picks: Union[Dict[object, Any], Any]):
