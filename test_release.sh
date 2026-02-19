@@ -18,7 +18,7 @@ git tag "v$VERSION"
 
 # Generate version file
 echo "Generating version file..."
-python -c "
+uv run python -c "
 import setuptools_scm
 from setuptools_scm import dump_version
 version = setuptools_scm.get_version()
@@ -32,7 +32,7 @@ echo ""
 
 # Build the package
 echo "Building package..."
-python -m build
+uv build
 
 # Show what was built
 echo "Built packages:"
@@ -40,7 +40,7 @@ ls -la dist/
 
 # Test package validation
 echo "Validating package..."
-python -m twine check dist/*
+uv run twine check dist/*
 
 # Show package contents
 echo "Package contents:"
@@ -56,4 +56,4 @@ git tag -d "v$VERSION"
 
 echo ""
 echo "✅ Test completed successfully!"
-echo "To actually publish, run: python -m twine upload dist/*" 
+echo "To actually publish, run: uv publish" 

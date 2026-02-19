@@ -1,7 +1,0 @@
-black
-isort
-pyright
-pytest
-pytest-mock
-pytest-asyncio
-pytype

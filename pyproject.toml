@@ -26,8 +26,13 @@ addopts = "-n auto"
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pytest-mock",
+    "pytest-asyncio",
+    "pytest-xdist",
     "black",
-    "isort"
+    "isort",
+    "pyright",
+    "pytype"
 ]
 
 [build-system]

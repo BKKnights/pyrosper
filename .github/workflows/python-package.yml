@@ -14,25 +14,27 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
 
     - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
+      run: uv python install 3.11
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-        pip install pytest
+      run: uv sync --extra dev
 
     - name: Run tests
-      run: pytest
+      run: uv run pytest
+
     - name: Check types with pyright
-      run: pyright src
+      run: uv run pyright src
+
     - name: Check types with pytype
-      run: pytype src
+      run: uv run pytype src
 
   build:
     runs-on: ubuntu-latest
@@ -40,20 +42,15 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: "3.11"
-
-    - name: Install build tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install build
+        enable-cache: true
 
     - name: Build package
-      run: python -m build
+      run: uv build
 
   publish:
     runs-on: ubuntu-latest
@@ -62,18 +59,15 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
       with:
-        python-version: "3.11"
-
-    - name: Install Twine
-      run: python -m pip install twine
+        enable-cache: true
 
     - name: Publish to PyPI
       env:
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      run: python -m twine upload dist/*
+        UV_PUBLISH_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: uv publish
