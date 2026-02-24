@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional, TypeVar, Generic, Self, Type
+from typing import List, Optional, TypeVar, Generic, Self, Type, Any
 from .variant import Variant
 from .user_variant import UserVariant
 
@@ -7,23 +7,35 @@ AlgorithmType = TypeVar('AlgorithmType')
 UserVariantType = TypeVar('UserVariantType', bound='UserVariant')
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
 VariantType = TypeVar('VariantType', bound='Variant')
+ExperimentIdType = TypeVar('ExperimentIdType')
+UserIdType = TypeVar('UserIdType')
+UserVariantIdType = TypeVar('UserVariantIdType')
 PickType = TypeVar('PickType')
 
-class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
+class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType, ExperimentIdType, UserIdType, UserVariantIdType]):
     variant_index: int
     name: str
-    variants: List[VariantType] = []
-    is_enabled: bool
-    id: Optional[str]
+    variants: List[VariantType]
+    _is_enabled: bool
+    id: Optional[ExperimentIdType]
 
-    def __init__(self, name: str = "", variants: List[VariantType] = [], variant_index: int = 0, is_enabled: bool = False, id: Optional[str] = None):
-        self.variant_index: int = variant_index
-        self.name: str = name
+    def __init__(self, name: str, variants: List[VariantType], id: Optional[ExperimentIdType] = None, *args: Any, **kwargs: Any):
+        self.variant_index = 0
+        self.name = name
         self.variants = variants
-        self.is_enabled: bool = is_enabled
-        self.id: Optional[str] = id
+        self.id = id
 
-    async def _get_user_variant_index(self, user_id: str) -> Optional[int]:
+    @property
+    @abstractmethod
+    def is_enabled(self) -> bool:
+        return self._is_enabled
+
+    @is_enabled.setter
+    @abstractmethod
+    def is_enabled(self, value: bool) -> None:
+        self._is_enabled = value
+
+    async def _get_user_variant_index(self, user_id: "UserIdType") -> Optional[int]:
         experiment = await self.get_experiment()
         if experiment and experiment.id:
             user_variant = await self.get_user_variant(user_id, experiment.id)
@@ -31,7 +43,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
                 return user_variant.index
         return None
 
-    async def _upsert_user_variant_index(self, user_id: str, index: int) -> None:
+    async def _upsert_user_variant_index(self, user_id: "UserIdType", index: int) -> None:
         experiment = await self.get_experiment()
         if not experiment or not experiment.id:
             return
@@ -39,7 +51,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         if user_variant:
             await self.upsert_user_variant(user_variant=user_variant)
 
-    async def _remove_index(self, user_id: str) -> None:
+    async def _remove_index(self, user_id: "UserIdType") -> None:
         experiment = await self.get_experiment()
         if not experiment or not experiment.id:
             raise ValueError("Experiment not found")
@@ -64,7 +76,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         pass
 
     @abstractmethod
-    async def get_user_variant(self, user_id: str, experiment_id: str) -> Optional[UserVariantType]:
+    async def get_user_variant(self, user_id: "UserIdType", experiment_id: "ExperimentIdType") -> Optional["UserVariantType"]:
         pass
 
     @abstractmethod
@@ -104,7 +116,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         self.is_enabled = False
         self.id = None
 
-    async def complete_for_user(self, user_id: str, score: float) -> None:
+    async def complete_for_user(self, user_id: "UserIdType", score: float) -> None:
         if not self.is_enabled:
             return
         user_variant_index = await self._get_user_variant_index(user_id)
@@ -115,10 +127,10 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         updated_algorithm = await self.reward_algorithm(algorithm, user_variant_index, score)
         await self.upsert_algorithm(updated_algorithm)
 
-    async def set_for_user(self, user_id: Optional[str] = None) -> None:
+    async def set_for_user(self, user_id: Optional["UserIdType"] = None) -> None:
         experiment = await self.get_experiment()
         if experiment:
-            self.is_enabled = experiment.is_enabled
+            self.is_enabled = bool(experiment.is_enabled)
             self.id = experiment.id
             await self.set_variant_index_for_user(user_id)
             return
@@ -136,7 +148,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
     def safe_disable(self) -> None:
         self.is_enabled = False
 
-    async def set_variant_index_for_user(self, user_id: Optional[str] = None) -> None:
+    async def set_variant_index_for_user(self, user_id: Optional["UserIdType"] = None) -> None:
         algorithm = await self.get_algorithm()
         if not user_id:
             self.variant_index = await self.get_variant_index(algorithm)
@@ -150,7 +162,7 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType]):
         self.variant_index = await self.get_variant_index(algorithm)
         await self._upsert_user_variant_index(user_id, self.variant_index)
 
-    async def get_variant(self, user_id: str) -> Optional[Variant]:
+    async def get_variant(self, user_id: "UserIdType") -> Optional[Variant]:
         self._check_variants()
         if not self.is_enabled:
             return None

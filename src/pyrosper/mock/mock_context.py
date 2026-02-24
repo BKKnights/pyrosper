@@ -6,6 +6,6 @@ from .mock_variant import MockVariant
 
 class MockContext(BaseContext[MockPyrosper]):
     def setup(self) -> MockPyrosper:
-        variant = MockVariant(name="test variant", picks={})
-        experiment = MockExperiment(name="test experiment", variants=[variant])
+        variant = MockVariant(name="test variant", picks={"test_value": "expected_result"})
+        experiment = MockExperiment(name="test experiment", variants=[variant], is_enabled=True)
         return MockPyrosper().with_experiment(experiment)

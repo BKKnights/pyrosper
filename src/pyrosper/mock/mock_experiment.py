@@ -1,4 +1,4 @@
-from typing import Optional, Self, TypeVar, Generic
+from typing import Optional, Self, TypeVar, Generic, Any, List
 
 from ..base_experiment import BaseExperiment
 from .mock_algorithm import MockAlgorithm
@@ -9,9 +9,22 @@ MockAlgorithmType = TypeVar('MockAlgorithmType', bound='MockAlgorithm')
 VariantType = TypeVar('VariantType', bound='MockVariant')
 UserVariantType = TypeVar('UserVariantType', bound='MockUserVariant')
 
-class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant], Generic[MockAlgorithmType, VariantType]):
+class MockExperiment(BaseExperiment[MockAlgorithm, MockVariant, MockUserVariant, str, str, str]):
     user_id: str
     algorithm: Optional[MockAlgorithm] = None
+    _is_enabled: bool
+
+    def __init__(self, name: str, variants: List[MockVariant], id: Optional[str] = None, variant_index: int = 0, is_enabled: bool = False):
+        super().__init__(name=name, variants=variants, id=id, variant_index=variant_index, is_enabled=is_enabled)
+        self.is_enabled = is_enabled
+
+    @property
+    def is_enabled(self) -> bool:
+        return self._is_enabled
+
+    @is_enabled.setter
+    def is_enabled(self, value: bool) -> None:
+        self._is_enabled = value
 
     async def get_experiment(self) -> Optional[Self]:
         return self
