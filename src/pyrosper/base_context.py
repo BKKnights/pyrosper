@@ -15,13 +15,6 @@ class BaseMetaContext(ABCMeta, ContextDecorator, Generic[PyrosperType]):
     """
     typed_instance_storage: ContextVar[Optional[PyrosperType]] = ContextVar("pyrosper_typed_instance_storage", default=None)
 
-    def get_current(cls) -> PyrosperType:
-        """Get the current pyrosper instance from context."""
-        result: Optional[PyrosperType] = cls.typed_instance_storage.get()
-        if not result:
-            raise RuntimeError("No pyrosper instance found in context")
-        return result
-
 T = TypeVar("T")
 
 class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMetaContext):
@@ -89,6 +82,17 @@ class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMe
             self.__class__.typed_instance_storage.reset(self.instance_token)
 
         return False
+
+
+    @classmethod
+    def get_current(cls) -> PyrosperType:
+        """Get the current pyrosper instance from context."""
+        # Use cast to satisfy pytype if needed, or just type hint result.
+        # But pytype seems to lose track of PyrosperType in the class scope for methods.
+        result: Optional[PyrosperType] = cls.typed_instance_storage.get()
+        if not result:
+            raise RuntimeError("No pyrosper instance found in context")
+        return result # pytype: disable=bad-return-type
 
     @classmethod
     def pick(cls, typ: Type[T], symbol: Symbol) -> Pick[T]:

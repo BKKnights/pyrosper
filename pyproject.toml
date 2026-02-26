@@ -34,6 +34,11 @@ dev = [
 requires = ["setuptools", "wheel", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+dev = [
+    "pytype>=2024.10.11",
+]
+
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme = "no-local-version"
