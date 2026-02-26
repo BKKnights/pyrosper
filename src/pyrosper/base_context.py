@@ -1,13 +1,18 @@
 from abc import ABC, abstractmethod, ABCMeta
 from contextlib import ContextDecorator
 from contextvars import ContextVar
-from typing import Optional, Generic, TypeVar
+from typing import Optional, Generic, TypeVar, Type
 
+from . import Symbol
+from .pick import Pick
 from .pyrosper import Pyrosper
 
 PyrosperType = TypeVar('PyrosperType', bound='Pyrosper')
 
 class BaseMetaContext(ABCMeta, ContextDecorator, Generic[PyrosperType]):
+    """
+    Metaclass for BaseContext.
+    """
     typed_instance_storage: ContextVar[Optional[PyrosperType]] = ContextVar("pyrosper_typed_instance_storage", default=None)
 
     def get_current(cls) -> PyrosperType:
@@ -17,6 +22,7 @@ class BaseMetaContext(ABCMeta, ContextDecorator, Generic[PyrosperType]):
             raise RuntimeError("No pyrosper instance found in context")
         return result
 
+T = TypeVar("T")
 
 class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMetaContext):
     """
@@ -39,9 +45,11 @@ class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMe
     """
 
     def __repr__(self):
+        """Return a string representation of the context."""
         return f"{self.__class__.__name__}()"
     
     def __init__(self):
+        """Initialize the context."""
         self.instance_token = None
         self.pyrosper_instance: Optional[PyrosperType] = None
 
@@ -81,3 +89,10 @@ class BaseContext(ABC, ContextDecorator, Generic[PyrosperType], metaclass=BaseMe
             self.__class__.typed_instance_storage.reset(self.instance_token)
 
         return False
+
+    @classmethod
+    def pick(cls, typ: Type[T], symbol: Symbol) -> Pick[T]:
+        """
+        Get a pick from the current pyrosper instance.
+        """
+        return Pick(typ, symbol, lambda: cls.get_current().pick(symbol, typ))

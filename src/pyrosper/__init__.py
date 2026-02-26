@@ -5,6 +5,7 @@ from .base_experiment import BaseExperiment
 from .variant import Variant
 from .symbol import Symbol
 from .user_variant import UserVariant
+from .pick import Pick
 from .pyrosper import Pyrosper, pick
 from .base_context import BaseContext
 
@@ -19,6 +20,7 @@ __all__ = [
     "UserVariant",
     "Pyrosper",
     "BaseContext",
+    "Pick",
     
     # Functions
     "pick",
