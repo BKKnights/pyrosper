@@ -4,15 +4,15 @@ from .base_experiment import BaseExperiment
 from .symbol import Symbol
 
 ExperimentType = TypeVar('ExperimentType', bound='BaseExperiment')
-
+UserIdType = TypeVar('UserIdType', bound='str | int')
 PickType = TypeVar("PickType")
 
-class Pyrosper(Generic[ExperimentType]):
+class Pyrosper(Generic[ExperimentType, UserIdType]):
     def __init__(self):
         self.experiments: List[ExperimentType] = []
         self.used_symbols: Set[object] = set()
 
-    async def set_for_user(self, user_id: Optional[str] = None) -> None:
+    async def set_for_user(self, user_id: Optional[UserIdType] = None) -> None:
         for experiment in self.experiments:
             await experiment.set_for_user(user_id)
 
