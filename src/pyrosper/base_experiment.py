@@ -173,13 +173,13 @@ class BaseExperiment(ABC, Generic[AlgorithmType, VariantType, UserVariantType, E
         self._check_variants()
         return symbol in self.variants[0].picks
 
-    def pick(self, symbol: object, type_of_pick: Type[PickType]) -> PickType:
+    def pick(self, symbol: object, type_of_pick: Optional[Type[PickType]]) -> PickType:
         self._check_variants()
         variant_index = self.variant_index or 0
         value = self.variants[variant_index].get_pick(symbol)
         if value is None:
             raise RuntimeError(f"`unable to find {symbol}")
-        if not isinstance(value, type_of_pick):
+        if type_of_pick and not isinstance(value, type_of_pick):
             raise TypeError(f"Expected type {type_of_pick}, but got {value} for symbol {symbol}")
         return value
 

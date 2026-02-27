@@ -19,7 +19,7 @@ class Pyrosper(Generic[ExperimentType, UserIdType]):
     def has_pick(self, symbol: object) -> bool:
         return any(experiment.has_pick(symbol) for experiment in self.experiments)
 
-    def pick(self, symbol: object, type_of_pick: Type[PickType]) -> PickType:
+    def pick(self, symbol: object, type_of_pick: Optional[Type[PickType]]) -> PickType:
         for experiment in self.experiments:
             if experiment.has_pick(symbol):
                 return experiment.pick(symbol, type_of_pick)
